@@ -31,13 +31,14 @@ export default function App() {
   }, []);
 
   const handleVoiceButtonClick = () => {
-    audioRef.current.play();
+    if (audioRef.current.paused) {
+      audioRef.current.play();
+    } else {
+      audioRef.current.pause();
+    }
   };
 
   useEffect(() => {
-    setTimeout(() => {
-      audioRef.current.play();
-    }, 1000);
     const date = new Date();
     setHours(date.getHours());
     setMinutes(date.getMinutes());
@@ -52,16 +53,22 @@ export default function App() {
 
   return (
     <div>
-      {audioRef.current && audioRef.current.paused && (
-        <button className="muteControl" onClick={handleVoiceButtonClick}>
-          Unmute
-        </button>
-      )}
-      <audio autoPlay controls loop preload="none" ref={audioRef}>
+      <audio controls loop preload="none" ref={audioRef}>
         <source src="/clock-ticking-natural-room.mp3" type="audio/mp3" />
       </audio>
       <div id="watch">
-        <div className="frame-face"></div>
+        <div className="frame-face">
+          <div
+            class={`switch ${audioRef.current?.paused ? "switched" : ""}`}
+            onClick={handleVoiceButtonClick}
+          >
+            <input
+              id="switch-1"
+              type="checkbox"
+              onChange={handleVoiceButtonClick}
+            />
+          </div>
+        </div>
         <ul className="minute-marks">
           {MINUTE_MARKS_ARR.map((_, index) => {
             const deg = (index + 1) * 6;
