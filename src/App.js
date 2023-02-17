@@ -1,77 +1,41 @@
 import React, { useEffect } from "react";
 import "./styles.css";
 
-const zeroPad = (numStr) => (Number(numStr) < 10 ? "0" + numStr : numStr);
-
-const MINUTE_MARKS_AMOUNT = 60;
-const MINUTE_MARKS_ARR = Array(MINUTE_MARKS_AMOUNT).fill();
-const HOURS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-const DEGREE_OF_ONE_MINUTE = 6;
-const DEGREE_OF_ONE_HOUR = 30;
-
 export default function App() {
-  const audioRef = React.useRef(null);
-  const [seconds, setSeconds] = React.useState(null);
-  const [minutes, setMinutes] = React.useState(null);
-  const [hours, setHours] = React.useState(null);
-
-  const updateTime = React.useCallback(() => {
-    const date = new Date();
-    const newSeconds = date.getSeconds();
-
-    setSeconds(newSeconds);
-    console.log(newSeconds);
-    if (newSeconds === 0) {
-      setMinutes(date.getMinutes());
-    }
-
-    if (date.getMinutes() === 0) {
-      setHours(date.getHours());
-    }
-  }, []);
-
-  const handleVoiceButtonClick = () => {
-    if (audioRef.current.paused) {
-      audioRef.current.play();
-    } else {
-      audioRef.current.pause();
-    }
-  };
-
-  useEffect(() => {
-    const date = new Date();
-    setHours(date.getHours());
-    setMinutes(date.getMinutes());
-    setSeconds(date.getSeconds());
-
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, [updateTime]);
-
-  const currentHourDegree = hours * DEGREE_OF_ONE_HOUR + minutes / 2;
-  const currentMinuteDegree = minutes * DEGREE_OF_ONE_MINUTE + seconds / 10;
+  const {
+    muted,
+    seconds,
+    minutes,
+    hours,
+    currentSecondDegree,
+    currentMinuteDegree,
+    currentHourDegree,
+    handleMuteToggleClick,
+    oneSecAudioRef,
+    MINUTE_MARKS_DESGREES_ARR,
+    HOURS
+  } = useClockLogic();
 
   return (
     <div>
-      <audio controls loop preload="none" ref={audioRef}>
-        <source src="/clock-ticking-natural-room.mp3" type="audio/mp3" />
+      <audio controls preload="none" ref={oneSecAudioRef}>
+        <source src="/clock-ticking-natural-room-750ms.mp3" type="audio/mp3" />
       </audio>
       <div id="watch">
         <div className="frame-face">
           <div
-            class={`switch ${audioRef.current?.paused ? "switched" : ""}`}
-            onClick={handleVoiceButtonClick}
+            class={`switch ${muted ? "switched" : ""}`}
+            onClick={handleMuteToggleClick}
           >
             <input
               id="switch-1"
               type="checkbox"
-              onChange={handleVoiceButtonClick}
+              onChange={handleMuteToggleClick}
             />
           </div>
         </div>
         <ul className="minute-marks">
-          {MINUTE_MARKS_ARR.map((_, index) => {
-            const deg = (index + 1) * 6;
+          {MINUTE_MARKS_DESGREES_ARR.map((deg, index) => {
             // Don't show minute mark behind a number (hour)
             if ((index + 1) % 5 === 0) return "";
 
@@ -109,9 +73,85 @@ export default function App() {
         />
         <div
           className="seconds-hand"
-          style={{ transform: `rotate(${seconds * DEGREE_OF_ONE_MINUTE}deg)` }}
+          style={{ transform: `rotate(${currentSecondDegree}deg)` }}
         />
       </div>
     </div>
   );
+}
+
+const zeroPad = (numStr) => (Number(numStr) < 10 ? "0" + numStr : numStr);
+const MINUTE_MARKS_AMOUNT = 60;
+const MINUTE_MARKS_ARR = Array(MINUTE_MARKS_AMOUNT).fill();
+const MINUTE_MARKS_DESGREES_ARR = MINUTE_MARKS_ARR.map((_, index) => {
+  const deg = (index + 1) * 6;
+  return deg;
+});
+const HOURS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+const DEGREE_OF_ONE_MINUTE = 6;
+const DEGREE_OF_ONE_HOUR = 30;
+
+function useClockLogic() {
+  const oneSecAudioRef = React.useRef(null);
+  const [seconds, setSeconds] = React.useState(null);
+  const [minutes, setMinutes] = React.useState(null);
+  const [hours, setHours] = React.useState(null);
+  const [muted, setMuted] = React.useState(true);
+
+  const updateTime = React.useCallback(() => {
+    const date = new Date();
+    const newSeconds = date.getSeconds();
+
+    setSeconds(newSeconds);
+
+    if (!muted && oneSecAudioRef?.current) {
+      oneSecAudioRef.current.play();
+    }
+    if (newSeconds === 0) {
+      setMinutes(date.getMinutes());
+    }
+
+    if (date.getMinutes() === 0) {
+      setHours(date.getHours());
+    }
+  }, [muted]);
+
+  const handleMuteToggleClick = () => {
+    if (muted) {
+      oneSecAudioRef.current.play();
+      setMuted(false);
+    } else {
+      setMuted(true);
+    }
+  };
+
+  useEffect(() => {
+    const date = new Date();
+    setHours(date.getHours());
+    setMinutes(date.getMinutes());
+    setSeconds(date.getSeconds());
+
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, [updateTime]);
+
+  const currentHourDegree = hours * DEGREE_OF_ONE_HOUR + minutes / 2;
+  const currentMinuteDegree = minutes * DEGREE_OF_ONE_MINUTE + seconds / 10;
+  const currentSecondDegree = seconds * 6;
+
+  return {
+    currentHourDegree,
+    currentMinuteDegree,
+    currentSecondDegree,
+    handleMuteToggleClick,
+    oneSecAudioRef,
+    seconds,
+    minutes,
+    hours,
+    muted,
+    zeroPad,
+    HOURS,
+    MINUTE_MARKS_ARR,
+    MINUTE_MARKS_DESGREES_ARR
+  };
 }
