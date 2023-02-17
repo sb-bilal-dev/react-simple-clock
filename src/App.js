@@ -152,6 +152,8 @@ function useClockLogic() {
     zeroPad,
     HOURS,
     MINUTE_MARKS_ARR,
-    MINUTE_MARKS_DESGREES_ARR
+    MINUTE_MARKS_DESGREES_ARR,
+    DEGREE_OF_ONE_MINUTE,
+    DEGREE_OF_ONE_HOUR
   };
 }
