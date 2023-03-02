@@ -105,7 +105,7 @@ function useClockLogic() {
     setSeconds(newSeconds);
 
     if (!muted && oneSecAudioRef?.current) {
-      oneSecAudioRef.current.play();
+      setTimeout(() => oneSecAudioRef.current.play(), 450); // Adjust audio timing. Timeout can be removed after cropping the audio correctly
     }
     if (newSeconds === 0) {
       setMinutes(date.getMinutes());
