@@ -114,7 +114,7 @@ function useClockLogic() {
     if (date.getMinutes() === 0) {
       setHours(date.getHours());
     }
-  }, [muted]);
+  }, [muted, oneSecAudioRef]);
 
   const handleMuteToggleClick = () => {
     if (muted) {
