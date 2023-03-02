@@ -24,7 +24,7 @@ export default function App() {
       <div id="watch">
         <div className="frame-face">
           <div
-            class={`switch ${muted ? "switched" : ""}`}
+            className={`switch ${muted ? "switched" : ""}`}
             onClick={handleMuteToggleClick}
           >
             <input
